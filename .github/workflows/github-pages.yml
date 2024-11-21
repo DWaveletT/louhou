@@ -1,9 +1,9 @@
-name: 3rd-eye Deploy
+name: Louhou Deploy
  
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
 
 jobs:
@@ -14,30 +14,28 @@ jobs:
       packages: read
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
+
     steps:
+      - uses: actions/checkout@v3
 
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Setup Node.js 16.x
+        uses: actions/setup-node@v3
         with:
-          node-version: 'latest'
-      
-      - name: Setup .npmrc
-        run: |
-          npm set @dwavelett:registry "https://npm.pkg.github.com"
-          npm set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Download packages
-        run: npm install --production --always-auth
+          node-version: 16.x
 
-      - name: Build
-        run: npm run build-only
+      - name: Run install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
+      - name: Build production bundle
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: build
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/master'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
